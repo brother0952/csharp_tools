@@ -1,0 +1,12 @@
+# 忽略编译输出
+bin/
+obj/
+*.exe
+*.dll
+
+# 忽略release目录中的可执行文件和DLL
+release/*.exe
+release/*.dll
+
+# 但保留release目录本身
+!release/ 

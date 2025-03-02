@@ -32,6 +32,15 @@ if exist "bin\%CONFIG%\net47\video_compress.exe" (
     copy /Y "bin\%CONFIG%\net47\video_compress.exe" "." > nul
     copy /Y "bin\%CONFIG%\net47\*.dll" "." > nul
     echo 编译成功！
+    
+    :: 创建release目录（如果不存在）
+    if not exist "release" mkdir release
+    
+    :: 复制到release目录
+    echo 正在复制文件到release目录...
+    copy /Y "video_compress.exe" "release\" > nul
+    copy /Y "*.dll" "release\" > nul
+    echo 复制完成！
 ) else (
     echo 编译失败！
     echo 请检查输出目录：bin\%CONFIG%\net47
