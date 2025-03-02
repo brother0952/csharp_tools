@@ -1,0 +1,79 @@
+<Window x:Class="CameraTool.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Camera Tool" Height="600" Width="800"
+        WindowStartupLocation="CenterScreen">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- 工具栏 -->
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="10">
+            <ComboBox x:Name="cmbCameras" Width="200" Margin="0,0,10,0"/>
+            <Button x:Name="btnStartStop" Content="开启摄像头" Width="100" Click="BtnStartStop_Click"/>
+            <CheckBox x:Name="chkShowFPS" Content="显示帧率" Margin="10,0" VerticalAlignment="Center"
+                      Checked="ChkShowFPS_CheckedChanged" Unchecked="ChkShowFPS_CheckedChanged"/>
+        </StackPanel>
+
+        <!-- 摄像头预览 -->
+        <Border Grid.Row="1" BorderBrush="Gray" BorderThickness="1" Margin="10">
+            <Grid>
+                <Image x:Name="imgPreview" Stretch="Uniform"/>
+                <TextBlock x:Name="txtFPS" Text="FPS: 0" 
+                         Margin="10" HorizontalAlignment="Left" VerticalAlignment="Top"
+                         Foreground="Yellow" FontWeight="Bold" Visibility="Collapsed"/>
+            </Grid>
+        </Border>
+
+        <!-- 参数设置 -->
+        <Expander Grid.Row="2" Header="摄像头参数" Margin="10">
+            <StackPanel Margin="10">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="100"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="50"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- 亮度 -->
+                    <TextBlock Text="亮度" Grid.Row="0" Grid.Column="0" VerticalAlignment="Center"/>
+                    <Slider x:Name="sldBrightness" Grid.Row="0" Grid.Column="1" 
+                            Minimum="0" Maximum="100" Value="50"
+                            ValueChanged="Slider_ValueChanged"/>
+                    <TextBlock Text="{Binding ElementName=sldBrightness, Path=Value, StringFormat={}{0:0}}"
+                             Grid.Row="0" Grid.Column="2" VerticalAlignment="Center"/>
+
+                    <!-- 对比度 -->
+                    <TextBlock Text="对比度" Grid.Row="1" Grid.Column="0" VerticalAlignment="Center"/>
+                    <Slider x:Name="sldContrast" Grid.Row="1" Grid.Column="1" 
+                            Minimum="0" Maximum="100" Value="50"
+                            ValueChanged="Slider_ValueChanged"/>
+                    <TextBlock Text="{Binding ElementName=sldContrast, Path=Value, StringFormat={}{0:0}}"
+                             Grid.Row="1" Grid.Column="2" VerticalAlignment="Center"/>
+
+                    <!-- 饱和度 -->
+                    <TextBlock Text="饱和度" Grid.Row="2" Grid.Column="0" VerticalAlignment="Center"/>
+                    <Slider x:Name="sldSaturation" Grid.Row="2" Grid.Column="1" 
+                            Minimum="0" Maximum="100" Value="50"
+                            ValueChanged="Slider_ValueChanged"/>
+                    <TextBlock Text="{Binding ElementName=sldSaturation, Path=Value, StringFormat={}{0:0}}"
+                             Grid.Row="2" Grid.Column="2" VerticalAlignment="Center"/>
+
+                    <!-- 分辨率 -->
+                    <TextBlock Text="分辨率" Grid.Row="3" Grid.Column="0" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="cmbResolutions" Grid.Row="3" Grid.Column="1" 
+                             SelectionChanged="CmbResolutions_SelectionChanged"/>
+                </Grid>
+            </StackPanel>
+        </Expander>
+    </Grid>
+</Window> 
