@@ -1,6 +1,7 @@
 <Window x:Class="CameraTool.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="clr-namespace:CameraTool"
         Title="视频压缩工具" Height="450" Width="800">
     <Grid Margin="10">
         <Grid.RowDefinitions>
@@ -59,7 +60,7 @@
 
         <!-- 处理进度和日志 -->
         <GroupBox Grid.Row="3" Header="处理进度">
-            <ScrollViewer>
+            <ScrollViewer x:Name="LogScrollViewer" local:ScrollViewerExtensions.AlwaysScrollToEnd="True">
                 <TextBox x:Name="LogTextBox" 
                          Text="{Binding LogText, UpdateSourceTrigger=PropertyChanged}"
                          IsReadOnly="True"

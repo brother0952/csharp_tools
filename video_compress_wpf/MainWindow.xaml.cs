@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using System.Windows.Threading;
 using OpenFileDialog = Microsoft.Win32.OpenFileDialog;
 using System.Threading;
+using System.Windows.Media;
 
 namespace CameraTool
 {
@@ -381,8 +382,30 @@ namespace CameraTool
                 return;
             }
 
+            // 使用数据绑定更新日志
             LogText += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
-            LogTextBox.ScrollToEnd();
+        }
+
+        // 辅助方法：查找视觉树中的子元素
+        private T FindVisualChild<T>(DependencyObject parent) where T : DependencyObject
+        {
+            for (int i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            {
+                DependencyObject child = VisualTreeHelper.GetChild(parent, i);
+                
+                if (child is T result)
+                {
+                    return result;
+                }
+                
+                T childOfChild = FindVisualChild<T>(child);
+                if (childOfChild != null)
+                {
+                    return childOfChild;
+                }
+            }
+            
+            return null;
         }
 
         protected void OnPropertyChanged(string name)
