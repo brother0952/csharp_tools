@@ -67,5 +67,12 @@ namespace CameraTool
                 throw new InvalidOperationException("The attached AlwaysScrollToEnd property can only be applied to ScrollViewer instances."); 
             }
         }
+
+        public static void ResetAutoScroll(ScrollViewer scroll)
+        {
+            if (scroll == null) { throw new ArgumentNullException("scroll"); }
+            _autoScroll = true;
+            scroll.ScrollToEnd();
+        }
     }
 } 

@@ -309,6 +309,9 @@ namespace CameraTool
 
         private async void StartCompression_Click(object sender, RoutedEventArgs e)
         {
+            // 重置自动滚动
+            ScrollViewerExtensions.ResetAutoScroll(LogScrollViewer);
+            
             if (_isProcessing)
             {
                 LogThreadSafe("正在处理中，请等待...");
@@ -426,6 +429,23 @@ namespace CameraTool
 
             // 使用数据绑定更新日志
             LogText += $"[{DateTime.Now:HH:mm:ss}] {message}\n";
+            
+            // 尝试滚动到底部
+            Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() => {
+                try
+                {
+                    // 如果用户没有手动滚动，则自动滚动到底部
+                    if (LogScrollViewer != null && 
+                        Math.Abs(LogScrollViewer.VerticalOffset - LogScrollViewer.ScrollableHeight) < 1.0)
+                    {
+                        LogScrollViewer.ScrollToEnd();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"滚动日志时出错: {ex.Message}");
+                }
+            }));
         }
 
         // 辅助方法：查找视觉树中的子元素
