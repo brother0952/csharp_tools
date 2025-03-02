@@ -3,6 +3,9 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:CameraTool"
         Title="视频压缩工具" Height="450" Width="800">
+    <Window.Resources>
+        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+    </Window.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -55,6 +58,17 @@
                     <Button Content="选择文件夹" Width="100" Click="SelectFolder_Click"/>
                     <TextBox x:Name="FolderPathTextBox" Text="{Binding InputFolder}" Margin="5,0,0,0"/>
                 </DockPanel>
+                <CheckBox x:Name="DeleteOriginalCheckBox" 
+                          Content="压缩完成后删除原始文件" 
+                          Margin="0,5,0,0"
+                          Foreground="Red"
+                          FontWeight="Bold"
+                          IsChecked="{Binding DeleteOriginalFiles}"/>
+                <TextBlock Text="警告：此操作不可恢复，请确保备份重要文件！" 
+                           Foreground="Red" 
+                           Margin="20,2,0,0" 
+                           FontStyle="Italic"
+                           Visibility="{Binding ElementName=DeleteOriginalCheckBox, Path=IsChecked, Converter={StaticResource BooleanToVisibilityConverter}}"/>
             </StackPanel>
         </GroupBox>
 

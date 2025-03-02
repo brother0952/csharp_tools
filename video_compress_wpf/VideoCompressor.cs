@@ -59,7 +59,7 @@ namespace CameraTool
             }
         }
 
-        public void ProcessVideos(string inputFolder, CompressionProfile profile, Action<string> log, CancellationToken cancellationToken = default)
+        public void ProcessVideos(string inputFolder, CompressionProfile profile, Action<string> log, bool deleteOriginal = false, CancellationToken cancellationToken = default)
         {
             var videoExtensions = new[] { ".mp4", ".avi", ".mov" };
             var files = Directory.GetFiles(inputFolder)
@@ -70,7 +70,21 @@ namespace CameraTool
                 cancellationToken.ThrowIfCancellationRequested();
                 try
                 {
-                    ProcessVideo(file, profile, log);
+                    bool success = ProcessVideo(file, profile, log);
+                    
+                    // 如果压缩成功且需要删除原始文件
+                    if (success && deleteOriginal)
+                    {
+                        try
+                        {
+                            File.Delete(file);
+                            log($"已删除原始文件: {Path.GetFileName(file)}");
+                        }
+                        catch (Exception ex)
+                        {
+                            log($"删除原始文件失败: {ex.Message}");
+                        }
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -79,13 +93,13 @@ namespace CameraTool
             }
         }
 
-        private void ProcessVideo(string inputPath, CompressionProfile profile, Action<string> log)
+        private bool ProcessVideo(string inputPath, CompressionProfile profile, Action<string> log)
         {
             // 跳过已经压缩过的文件
             if (Path.GetFileName(inputPath).Contains("_cpu_q") || Path.GetFileName(inputPath).Contains("_gpu_q"))
             {
                 log($"跳过已压缩文件: {Path.GetFileName(inputPath)}");
-                return;
+                return false;
             }
 
             var outputPath = GetOutputPath(inputPath, profile);
@@ -114,7 +128,7 @@ namespace CameraTool
                 if (process == null)
                 {
                     log($"无法启动FFmpeg进程");
-                    return;
+                    return false;
                 }
 
                 // 读取错误输出
@@ -128,6 +142,7 @@ namespace CameraTool
                     log($"压缩完成: {Path.GetFileName(outputPath)}");
                     log($"原始大小: {FormatFileSize(originalSize)}, 压缩后: {FormatFileSize(newSize)}");
                     log($"压缩比: {ratio:F2}x");
+                    return true;
                 }
                 else
                 {
@@ -145,6 +160,7 @@ namespace CameraTool
                         File.Delete(outputPath);
                         log($"已删除不完整的输出文件");
                     }
+                    return false;
                 }
             }
             catch (Exception ex)
@@ -154,6 +170,7 @@ namespace CameraTool
                 {
                     File.Delete(outputPath);
                 }
+                return false;
             }
         }
 

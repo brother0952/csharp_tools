@@ -24,6 +24,7 @@ namespace CameraTool
         private VideoCompressor _compressor;
         private CancellationTokenSource _cancellationTokenSource;
         private bool _initialized = false;
+        private bool _deleteOriginalFiles;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
@@ -70,6 +71,24 @@ namespace CameraTool
             {
                 _logText = value;
                 OnPropertyChanged(nameof(LogText));
+            }
+        }
+
+        public bool DeleteOriginalFiles
+        {
+            get => _deleteOriginalFiles;
+            set
+            {
+                if (_deleteOriginalFiles != value)
+                {
+                    _deleteOriginalFiles = value;
+                    OnPropertyChanged(nameof(DeleteOriginalFiles));
+                    // 只有在非初始化阶段才保存设置
+                    if (_initialized)
+                    {
+                        SaveSettings();
+                    }
+                }
             }
         }
 
@@ -163,21 +182,24 @@ namespace CameraTool
                 string savedFolder = Properties.Settings.Default.LastFolder;
                 int savedQuality = Properties.Settings.Default.QualityIndex;
                 int savedEncoder = Properties.Settings.Default.EncoderIndex;
+                bool deleteOriginal = Properties.Settings.Default.DeleteOriginalFiles;
                 
                 // 确保索引值有效
                 if (savedQuality < 0) savedQuality = 1; // 默认高质量
                 if (savedEncoder < 0) savedEncoder = 0; // 默认CPU
                 
                 // 记录日志
-                LogThreadSafe($"读取设置: FFmpeg路径={savedPath}, 编码器={savedEncoder}, 质量={savedQuality}, 上次文件夹={savedFolder}");
+                LogThreadSafe($"读取设置: FFmpeg路径={savedPath}, 编码器={savedEncoder}, 质量={savedQuality}, 上次文件夹={savedFolder}, 删除原始文件={deleteOriginal}");
                 
                 // 设置属性值（不触发保存）
                 _ffmpegPath = savedPath;
                 _inputFolder = savedFolder;
+                _deleteOriginalFiles = deleteOriginal;
                 
                 // 通知属性变更
                 OnPropertyChanged(nameof(FFmpegPath));
                 OnPropertyChanged(nameof(InputFolder));
+                OnPropertyChanged(nameof(DeleteOriginalFiles));
             }
             catch (Exception ex)
             {
@@ -207,9 +229,10 @@ namespace CameraTool
                 // 其他设置正常保存
                 Properties.Settings.Default.FFmpegPath = FFmpegPath;
                 Properties.Settings.Default.LastFolder = InputFolder;
+                Properties.Settings.Default.DeleteOriginalFiles = DeleteOriginalFiles;
                 Properties.Settings.Default.Save();
                 
-                LogThreadSafe($"设置已保存: FFmpeg路径={FFmpegPath}, 编码器={Properties.Settings.Default.EncoderIndex}, 质量={Properties.Settings.Default.QualityIndex}, 文件夹={InputFolder}");
+                LogThreadSafe($"设置已保存: FFmpeg路径={FFmpegPath}, 编码器={Properties.Settings.Default.EncoderIndex}, 质量={Properties.Settings.Default.QualityIndex}, 文件夹={InputFolder}, 删除原始文件={DeleteOriginalFiles}");
             }
             catch (Exception ex)
             {
@@ -239,6 +262,7 @@ namespace CameraTool
                 // 其他设置正常保存
                 Properties.Settings.Default.FFmpegPath = _ffmpegPath;
                 Properties.Settings.Default.LastFolder = _inputFolder;
+                Properties.Settings.Default.DeleteOriginalFiles = _deleteOriginalFiles;
                 Properties.Settings.Default.Save();
                 
                 // 可选：记录实际保存的值
@@ -310,7 +334,25 @@ namespace CameraTool
             {
                 var profile = GetCurrentProfile();
                 _compressor.FFmpegPath = FFmpegPath;
-                await Task.Run(() => _compressor.ProcessVideos(InputFolder, profile, LogThreadSafe, _cancellationTokenSource.Token));
+                
+                // 如果选择了删除原始文件，添加确认对话框
+                if (DeleteOriginalFiles)
+                {
+                    var result = System.Windows.MessageBox.Show(
+                        "您选择了压缩完成后删除原始文件，此操作不可恢复！\n\n确定要继续吗？",
+                        "危险操作确认",
+                        System.Windows.MessageBoxButton.YesNo,
+                        System.Windows.MessageBoxImage.Warning);
+                        
+                    if (result != System.Windows.MessageBoxResult.Yes)
+                    {
+                        LogThreadSafe("操作已取消");
+                        UpdateButtonState(false);
+                        return;
+                    }
+                }
+                
+                await Task.Run(() => _compressor.ProcessVideos(InputFolder, profile, LogThreadSafe, DeleteOriginalFiles, _cancellationTokenSource.Token));
             }
             catch (OperationCanceledException)
             {
