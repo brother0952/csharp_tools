@@ -1,5 +1,7 @@
 @echo off
+chcp 65001 > nul
 setlocal
+
 
 set MSBUILD="C:\Program Files (x86)\Microsoft Visual Studio\2022\BuildTools\MSBuild\Current\Bin\MSBuild.exe"
 set CONFIG=Release
@@ -29,12 +31,20 @@ echo ^</Project^> >> ListPorts.csproj
 if exist "bin\%CONFIG%\ListPorts.exe" (
     copy /Y "bin\%CONFIG%\ListPorts.exe" "."
     echo 编译成功！
+    @REM :: 创建release目录（如果不存在）
+    if not exist "release" mkdir release
+    
+    :: 复制到release目录
+    echo 正在复制文件到release目录...
+    copy /Y "ListPorts.exe" "release\" > nul
+    echo 复制完成！
+
 ) else (
     echo 编译失败！
 )
 
 :: 清理临时文件
-del ListPorts.csproj
-rmdir /s /q bin obj
+@REM del ListPorts.csproj
+@REM rmdir /s /q bin obj
 
 @REM pause 
